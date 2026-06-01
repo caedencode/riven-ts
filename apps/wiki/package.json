@@ -10,7 +10,8 @@
     "lint": "eslint",
     "start": "next start",
     "sync-core-docs": "node scripts/sync-core-docs.mjs",
-    "sync-plugin-docs": "node scripts/sync-plugin-docs.mjs"
+    "sync-plugin-docs": "node scripts/sync-plugin-docs.mjs",
+    "sync-ranking-docs": "node scripts/sync-ranking-docs.mjs"
   },
   "dependencies": {
     "fumadocs-core": "catalog:",
