@@ -13,44 +13,53 @@ type PackageJsonDefinition = {
   files?: string[];
 };
 
-const commonFields: PackageJsonDefinition = {
-  exports: {
-    ".": {
-      production: "./dist/index.js",
-      default: "./lib/index.ts",
+const packageTypeFields: Partial<
+  Record<PackageType | "*", PackageJsonDefinition>
+> = {
+  "*": {
+    exports: {
+      ".": {
+        production: "./dist/index.js",
+        default: "./lib/index.ts",
+      },
+    },
+    files: ["dist"],
+    devDependencies: {
+      "@repo/core-util-eslint-config": "workspace:^",
+      "@repo/core-util-typescript-config": "workspace:^",
+      "@repo/core-util-vitest-config": "workspace:^",
+      "@types/node": "catalog:",
+      "@typescript-eslint/parser": "catalog:",
+      eslint: "catalog:",
+      typescript: "catalog:",
+      vitest: "catalog:",
+    },
+    scripts: {
+      build: "tsc --project tsconfig.lib.json",
+      "check-types":
+        "tsc --noEmit --project tsconfig.lib.json && tsc --noEmit --project tsconfig.spec.json",
+      lint: "eslint",
+      "lint:fix": "pnpm lint --fix",
+      test: "vitest run --passWithNoTests",
+      "test:watch": "vitest",
     },
   },
-  files: ["dist"],
-  devDependencies: {
-    "@repo/core-util-eslint-config": "workspace:^",
-    "@repo/core-util-typescript-config": "workspace:^",
-    "@repo/core-util-vitest-config": "workspace:^",
-    "@types/node": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
-    eslint: "catalog:",
-    msw: "catalog:",
-    typescript: "catalog:",
-    vitest: "catalog:",
-  },
-  scripts: {
-    build: "tsc --project tsconfig.lib.json",
-  },
-};
-
-const packageTypeFields: Partial<Record<PackageType, PackageJsonDefinition>> = {
   plugin: {
+    exports: {
+      "./wiki.config": "./wiki.config.ts",
+    },
     scripts: {
-      "codegen:config-docs": "zod2md",
+      "codegen:config-docs": "pnpm node scripts/generate-zod-docs.ts",
     },
     dependencies: {
-      "@apollo/datasource-rest": "catalog:",
       "@repo/util-plugin-sdk": "workspace:^",
+      "@repo/util-wiki-helpers": "workspace:^",
       "type-graphql": "catalog:",
       zod: "catalog:",
     },
     devDependencies: {
       "@repo/util-plugin-testing": "workspace:^",
-      zod2md: "catalog:",
+      msw: "catalog:",
     },
   },
 };
@@ -64,7 +73,7 @@ export function registerPackageJsonFieldsHelper(plop: PlopTypes.NodePlopAPI) {
       packageJsonFieldType: keyof PackageJsonDefinition,
     ) {
       const fields = toMerged(
-        commonFields[packageJsonFieldType] ?? {},
+        packageTypeFields["*"]?.[packageJsonFieldType] ?? {},
         packageTypeFields[packageType]?.[packageJsonFieldType] ?? {},
       );
 

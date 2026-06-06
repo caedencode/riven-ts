@@ -1,9 +1,11 @@
+import { formatOutputCode } from "./actions/format-output.ts";
 import { installDependenciesToPackages } from "./actions/install-dependencies-to-package.ts";
 
 import type { PlopTypes } from "@turbo/gen";
 
 interface PluginAnswers {
   pluginName: string;
+  confirm: boolean;
 }
 
 export const createPluginGenerator = (plop: PlopTypes.NodePlopAPI) =>
@@ -34,6 +36,8 @@ export const createPluginGenerator = (plop: PlopTypes.NodePlopAPI) =>
           if (!data.confirm) {
             return "Plugin creation cancelled.";
           }
+
+          return;
         },
         type: "addMany",
         base: "templates/shared/boilerplate",
@@ -48,20 +52,32 @@ export const createPluginGenerator = (plop: PlopTypes.NodePlopAPI) =>
           if (!data.confirm) {
             return "Plugin creation cancelled.";
           }
+
+          return;
         },
         type: "addMany",
         base: "templates/plugin",
         destination: "packages/plugin-{{kebabCase pluginName}}",
         templateFiles: "templates/plugin/**",
       },
-      (answers) => {
+      async (answers) => {
+        if (answers["confirm"] === false) {
+          return "Plugin creation cancelled.";
+        }
+
         const pluginName = plop.getHelper("kebabCase")(
           (answers as PluginAnswers).pluginName,
         );
 
-        return installDependenciesToPackages(["@repo/riven"], "dependencies", {
-          [`@repo/plugin-${pluginName}`]: "workspace:^",
-        });
+        await installDependenciesToPackages(
+          ["@repo/riven", "@repo/wiki"],
+          "dependencies",
+          {
+            [`@repo/plugin-${pluginName}`]: "workspace:^",
+          },
+        );
+
+        return formatOutputCode([`packages/plugin-${pluginName}/**/*`]);
       },
     ],
   });
