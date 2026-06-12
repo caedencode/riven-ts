@@ -11,6 +11,7 @@ import {
 } from "@mikro-orm/decorators/legacy";
 import assert from "node:assert";
 
+import { redisCache } from "../../../utilities/redis-cache.ts";
 import { BaseService } from "../core/base-service.ts";
 import { blacklistStream } from "./utilities/blacklist-stream.ts";
 import { calculateItemsToReprocess } from "./utilities/calculate-items-to-reprocess.ts";
@@ -24,14 +25,28 @@ export class StreamService extends BaseService {
     return isFatalStatusCode(statusCode);
   }
 
-  @CreateRequestContext()
-  async saveStreamUrl(entryId: UUID, streamUrl: string) {
-    return this.em.getRepository(MediaEntry).saveStreamUrl(entryId, streamUrl);
+  async saveStreamLink(entryId: UUID, streamUrl: string, ttl: number) {
+    await redisCache.set(`stream-link:${entryId}`, streamUrl, { ttl });
+  }
+
+  async getStreamLink(entryId: UUID) {
+    return redisCache.get(`stream-link:${entryId}`);
+  }
+
+  async clearStreamLink(entryId: UUID) {
+    await redisCache.delete(`stream-link:${entryId}`);
   }
 
   @CreateRequestContext()
-  async clearStreamUrl(entryId: UUID) {
-    return this.em.getRepository(MediaEntry).clearStreamUrl(entryId);
+  async saveStreamPermalink(entryId: UUID, streamUrl: string) {
+    return this.em
+      .getRepository(MediaEntry)
+      .saveStreamPermalink(entryId, streamUrl);
+  }
+
+  @CreateRequestContext()
+  async clearStreamPermalink(entryId: UUID) {
+    return this.em.getRepository(MediaEntry).clearStreamPermalink(entryId);
   }
 
   @EnsureRequestContext()
