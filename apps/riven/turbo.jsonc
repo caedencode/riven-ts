@@ -22,8 +22,12 @@
       ]
     },
     "codegen:gql-schema": {
-      "dependsOn": ["$TURBO_EXTENDS$", "transit:source-files"],
-      "inputs": ["lib/**/*.ts"],
+      "dependsOn": [
+        "$TURBO_EXTENDS$",
+        "codegen:api-schemas",
+        "transit:source-files"
+      ],
+      "inputs": ["lib/**/*.ts", "scripts/generate-gql-schema.ts"],
       "outputs": ["schema.graphql"]
     },
     "codegen:gql": {

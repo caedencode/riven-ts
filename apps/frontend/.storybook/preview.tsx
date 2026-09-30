@@ -12,16 +12,19 @@ import addonA11y from "@storybook/addon-a11y";
 import addonDocs from "@storybook/addon-docs";
 import addonVitest from "@storybook/addon-vitest";
 import { definePreview } from "@storybook/nextjs-vite";
+import { headers } from "@storybook/nextjs-vite/headers.mock";
 import isChromatic from "chromatic/isChromatic";
 import { DateTime, Settings } from "luxon";
 import mswAddon from "msw-storybook-addon";
 import { Suspense, useLayoutEffect } from "react";
 import { toast } from "sonner";
-import { expect } from "storybook/test";
+import { expect, sb } from "storybook/test";
 import { themes } from "storybook/theming";
 
 import { WithI18n } from "./decorators/with-i18n";
 import { WithReducedMotionCheck } from "./decorators/with-reduced-motion-check.tsx";
+
+sb.mock(import("../lib/graphql/client.ts"));
 
 if (isChromatic()) {
   const baseDate = DateTime.fromObject({ year: 2026, month: 8, day: 26 });
@@ -141,9 +144,11 @@ export const preview = definePreview({
       );
     },
   ],
-  beforeEach() {
+  beforeEach({ globals }) {
     resetApolloClientSingletons(); // Clear Apollo Client cache to prevent stale data between stories
     toast.dismiss();
+
+    headers().append("accept-language", globals.locale);
   },
 });
 

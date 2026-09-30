@@ -2,8 +2,14 @@
   "$schema": "https://turborepo.dev/schema.json",
   "extends": ["//"],
   "tasks": {
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+    },
     "dev": {
-      "with": ["@repo/riven#dev"]
+      "cache": false,
+      "with": ["@repo/riven#dev", "codegen:gql:watch"],
+      "persistent": true,
+      "passThroughEnv": ["NEXT_RUNTIME"]
     },
     "lint": {
       "dependsOn": [

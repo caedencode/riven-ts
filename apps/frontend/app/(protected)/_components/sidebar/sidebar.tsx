@@ -15,18 +15,17 @@ import Link from "next/link";
 import { LogOutButton } from "./_components/log-out-button";
 
 import type { User } from "@/lib/auth/types";
-import type { LucideIcon } from "lucide-react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export interface SidebarItem {
   href: Extract<ComponentProps<typeof Link>["href"], string>;
-  icon: LucideIcon;
+  icon: ReactNode;
   label: string;
 }
 
 interface SidebarProps {
   currentPath: string;
-  items: SidebarItem[];
+  items: readonly SidebarItem[];
   user: User | undefined;
 }
 
@@ -43,7 +42,6 @@ export function Sidebar({ currentPath, items, user }: SidebarProps) {
         aria-label="Main Navigation"
       >
         {items.map((item) => {
-          const IconComponent = item.icon;
           const isCurrentPath = currentPath === item.href;
 
           return (
@@ -52,13 +50,13 @@ export function Sidebar({ currentPath, items, user }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "hover:bg-accent/80 group relative flex h-10 w-10 items-center justify-center rounded-md transition-colors",
+                    "hover:bg-accent/80 group relative flex h-10 w-10 items-center justify-center rounded-md transition-colors [&_svg]:size-5",
                     isCurrentPath ? "bg-accent" : "",
                   )}
                   aria-label={item.label}
                   aria-current={isCurrentPath ? "page" : undefined}
                 >
-                  <IconComponent className="size-5" />
+                  {item.icon}
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">
